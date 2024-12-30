@@ -76,7 +76,10 @@ func QueryAndValues(structure any, queryType queryType, queryPlaceholder queryPl
 
 		tagValue, hasTag := typeAtualField.Tag.Lookup(tagName)
 		parsedTagValue := regexp.MustCompile(`,.*$`).ReplaceAllString(tagValue, "")
-		if hasTag && !regexp.MustCompile(parsedTagValue).MatchString(strings.Join(skips, " ")) {
+		isSkippedTag := regexp.MustCompile(parsedTagValue).
+			MatchString(strings.Join(skips, " ")) ||
+			parsedTagValue == "-"
+		if hasTag && !isSkippedTag {
 			columns = append(columns, parsedTagValue)
 			values = append(values, valueAtualField.Elem().Interface())
 		}

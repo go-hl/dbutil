@@ -7,6 +7,7 @@ import (
 )
 
 type test struct {
+	Column0 *any `query:"-,param"`
 	Column1 *any `query:"column_1,param"`
 	Column2 *any `query:"column_2"`
 	Column3 any  `query:"column_3,param"`
@@ -33,6 +34,7 @@ type testable struct {
 }
 
 var (
+	value0 any = "value0"
 	value1 any = "value1"
 	value2 any = "value2"
 	value4 any = "value4"
@@ -41,6 +43,7 @@ var (
 	value8 any = "value8"
 
 	table1 = test{
+		Column0: &value0,
 		Column1: &value1,
 		Column2: &value2,
 		Column3: "value3",
