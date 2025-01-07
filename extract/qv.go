@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func buildQuery(queryType queryType, queryPlaceholder queryPlaceholder, tableName, returning string, columns []string) string {
+func buildQuery(queryType queryType, queryPlaceholder queryPlaceholder, tableName, returning string, columns []string) (string, bool) {
 	var query, parsedColumns, parsedIndexes string
 
 	if queryType == CreateType {
@@ -20,6 +20,12 @@ func buildQuery(queryType queryType, queryPlaceholder queryPlaceholder, tableNam
 		query += ` returning "` + returning + `"`
 	}
 
+	if queryType == UpdateType && len(columns) <= 1 {
+		query = strings.NewReplacer("(", "", ")", "").Replace(query)
+	}
+
+	baseQuery := strings.ReplaceAll(query, `%s`, "")
+
 	for index, column := range columns {
 		parsedColumns += `"` + column + `", `
 		if queryPlaceholder == DollarPlaceholder {
@@ -29,14 +35,13 @@ func buildQuery(queryType queryType, queryPlaceholder queryPlaceholder, tableNam
 		}
 	}
 
-	if queryType == UpdateType && len(columns) <= 1 {
-		query = strings.NewReplacer("(", "", ")", "").Replace(query)
-	}
-	return fmt.Sprintf(
+	parsedQuery := fmt.Sprintf(
 		query,
 		strings.TrimSuffix(parsedColumns, ", "),
 		strings.TrimSuffix(parsedIndexes, ", "),
 	)
+
+	return parsedQuery, parsedQuery == baseQuery
 }
 
 // QueryAndValues builds a query (INSERT or UPDATE) by extracting the column
@@ -85,5 +90,10 @@ func QueryAndValues(structure any, queryType queryType, queryPlaceholder queryPl
 		}
 	}
 
-	return buildQuery(queryType, queryPlaceholder, tableName, returning, columns), values, nil
+	query, isBaseQuery := buildQuery(queryType, queryPlaceholder, tableName, returning, columns)
+	if isBaseQuery {
+		return query, values, ErrBaseQuery
+	}
+
+	return query, values, nil
 }

@@ -1,6 +1,7 @@
 package extract
 
 import (
+	"errors"
 	"fmt"
 	"slices"
 	"testing"
@@ -57,6 +58,27 @@ var (
 	table3 test
 )
 
+// subtitles
+//
+//  1. struct type
+//     - V: value
+//     - P: pointer
+//  2. what struct
+//     - 1: table1
+//     - 2: table2
+//     - 3: table3
+//  3. create/update
+//     - C: create
+//     - U: update
+//  4. question/dollar mark
+//     - Q: question mark
+//     - D: dollar mark
+//  5. skip fields
+//     - Z: none
+//     - S: skips
+//  6. returning
+//     - N: no return
+//     - R: returning
 var tests = []testable{
 	{table1, CreateType, QuestionMarkPlaceholder, "query", "table", "", nil, "V1CQZN", `insert into "table" ("column_1", "column_2", "column_4", "column_5", "column_7") values (?, ?, ?, ?, ?)`, []any{"value1", "value2", "value4", "value5", "value7"}},
 	{&table1, CreateType, QuestionMarkPlaceholder, "query", "table", "", nil, "P1CQZN", `insert into "table" ("column_1", "column_2", "column_4", "column_5", "column_7") values (?, ?, ?, ?, ?)`, []any{"value1", "value2", "value4", "value5", "value7"}},
@@ -89,7 +111,7 @@ func TestQueryAndValues(t *testing.T) {
 		if !slices.Equal(valuesResult, test.valuesExpect) {
 			t.Errorf("\n- CONFIG: %s\n- VALUES result: %#v\n- VALUES expect: %#v\n", test.config, valuesResult, test.valuesExpect)
 		}
-		if errResult != nil {
+		if errResult != nil && !errors.Is(errResult, ErrBaseQuery) {
 			t.Errorf("\n- CONFIG: %s\n- ERROR: %v\n", test.config, errResult)
 		}
 		fmt.Printf("\t- # query: %s\n\t- $ values: %#v\n\t- ! error: %v\n", queryResult, valuesResult, errResult)

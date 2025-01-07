@@ -19,5 +19,10 @@ var (
 	DollarPlaceholder queryPlaceholder = "$"
 )
 
-// ErrIsNotStruct if the object given is not a struct.
-var ErrIsNotStruct = errors.New("object given is not struct")
+var (
+	// ErrIsNotStruct if the object given is not a struct.
+	ErrIsNotStruct = errors.New("object given is not struct")
+
+	// ErrBaseQuery if the final query is empty.
+	ErrBaseQuery = errors.New("final query is same the base")
+)
